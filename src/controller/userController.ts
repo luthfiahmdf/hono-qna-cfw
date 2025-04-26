@@ -1,15 +1,14 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Context } from "../types/type";
-import { createUser } from "../routes/userRoutes";
+import { createUser, getUser } from "../routes/userRoutes";
 import { drizzle } from "drizzle-orm/d1";
 import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { HTTPException } from "hono/http-exception";
 
-const userController = new OpenAPIHono<Context>().openapi(
-  createUser,
-  async (c) => {
+const userController = new OpenAPIHono<Context>()
+  .openapi(createUser, async (c) => {
     const userData = c.req.valid("json");
     const db = drizzle(c.env.DB);
     const userExist = await db
@@ -33,6 +32,15 @@ const userController = new OpenAPIHono<Context>().openapi(
       .returning();
 
     return c.json(user, 200);
-  }
-);
+  })
+  .openapi(getUser, async (c) => {
+    const db = drizzle(c.env.DB);
+    const usersData = await db
+      .select({
+        id: users.id,
+        username: users.username,
+      })
+      .from(users);
+    return c.json(usersData, 200);
+  });
 export { userController };
