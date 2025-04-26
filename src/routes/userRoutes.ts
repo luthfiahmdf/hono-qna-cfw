@@ -14,4 +14,15 @@ const createUser = createRoute({
     400: jsonContent(errorSchema, "Bad request"),
   },
 });
-export { createUser };
+const getUser = createRoute({
+  method: "get",
+  path: "",
+  responses: {
+    200: jsonContent(
+      usersSchema.omit({ password: true }).array(),
+      "get All User"
+    ),
+    400: jsonContent(errorSchema, "Bad request"),
+  },
+});
+export { createUser, getUser };

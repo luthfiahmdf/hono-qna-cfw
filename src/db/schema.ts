@@ -8,6 +8,7 @@ export const users = sqliteTable("users_table", {
     .$defaultFn(() => uuidv7()),
   username: text("user_name").notNull().unique(),
   password: text("password").notNull(),
+  activeQuestion: text("active_question"),
 });
 export const questions = sqliteTable("questions_table", {
   id: text("id")
@@ -17,9 +18,10 @@ export const questions = sqliteTable("questions_table", {
     .notNull()
     .references(() => users.id),
   name: text("name"),
-  question: text("question")
+  createAt: text("create_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
+  question: text("question").notNull(),
 });
 export const activeQuestions = sqliteTable("active_questions_table", {
   id: text("id")
