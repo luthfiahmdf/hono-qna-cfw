@@ -3,7 +3,7 @@ import { Context } from "../types/type";
 import { createQuestion, getQuestion } from "../routes/questionRoutes";
 import { drizzle } from "drizzle-orm/d1";
 import { questions, users } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import { requireAuth } from "../middleware/jwt";
 
@@ -43,7 +43,8 @@ const questionController = new OpenAPIHono<Context>()
     const questionsData = await db
       .select()
       .from(questions)
-      .where(eq(questions.userId, user.id));
+      .where(eq(questions.userId, user.id))
+      .orderBy(desc(questions.createAt));
     return c.json(questionsData, 200);
   });
 
