@@ -1,4 +1,3 @@
-import { create } from "domain";
 import { relations, sql } from "drizzle-orm";
 import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v7 as uuidv7 } from "uuid";
@@ -8,7 +7,6 @@ export const users = sqliteTable("users_table", {
     .$defaultFn(() => uuidv7()),
   username: text("user_name").notNull().unique(),
   password: text("password").notNull(),
-  activeQuestion: text("active_question"),
 });
 export const questions = sqliteTable("questions_table", {
   id: text("id")
