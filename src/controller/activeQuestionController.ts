@@ -43,9 +43,25 @@ const activeQuestionController = new OpenAPIHono<Context>()
     if (!user) {
       throw new HTTPException(404, { message: "User not found" });
     }
+    const [activeQuestion] = await db
+      .select()
+      .from(activeQuestions)
+      .where(eq(activeQuestions.userId, user.id));
+
+    if (!activeQuestion) {
+      const [newActiveQuestion] = await db
+        .insert(activeQuestions)
+        .values({
+          userId: user.id,
+          questionId: questionData.questionId,
+        })
+        .returning();
+
+      return c.json(newActiveQuestion, 201);
+    }
     const [activeQuestionData] = await db
-      .insert(activeQuestions)
-      .values({
+      .update(activeQuestions)
+      .set({
         userId: user.id,
         questionId: questionData.questionId,
       })
@@ -55,10 +71,7 @@ const activeQuestionController = new OpenAPIHono<Context>()
   .openapi(getActiveQuestion, async (c) => {
     const { slug } = c.req.param();
     const db = drizzle(c.env.DB, { schema });
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.username, slug));
+    const [user] = await db.select().from(users).where(eq(users.id, slug));
     if (!user) {
       throw new HTTPException(404, { message: "User not found" });
     }

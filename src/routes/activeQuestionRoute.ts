@@ -51,6 +51,10 @@ const updateActiveQuestion = createRoute({
       activeQuestionSchema.omit({ id: true, createAt: true }),
       "Question created"
     ),
+    201: jsonContent(
+      activeQuestionSchema.omit({ id: true, createAt: true }),
+      "Question updated"
+    ),
     400: jsonContent(errorSchema, "Bad request"),
     404: jsonContent(errorSchema, "Not found"),
   },
@@ -58,7 +62,7 @@ const updateActiveQuestion = createRoute({
 
 const getActiveQuestion = createRoute({
   method: "get",
-  middleware: [requireAuth],
+  // middleware: [requireAuth],
   path: "/:slug",
   request: { params: qeustionParamsSchema },
   responses: {

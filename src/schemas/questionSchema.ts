@@ -8,14 +8,13 @@ export const questionSchema = z.object({
   }),
   name: z
     .string()
-    .min(3)
     .max(50)
     .openapi({
       example: "johndoe",
     })
     .optional()
     .nullable(),
-  question: z.string().min(2).max(100).openapi({
+  question: z.string().min(3).max(160).openapi({
     example: "johndoe",
   }),
   createAt: z.string().openapi({

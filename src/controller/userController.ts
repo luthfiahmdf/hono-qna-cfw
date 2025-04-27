@@ -1,6 +1,6 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Context } from "../types/type";
-import { createUser, getUser } from "../routes/userRoutes";
+import { createUser, getUser, getUserMe } from "../routes/userRoutes";
 import { drizzle } from "drizzle-orm/d1";
 import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
@@ -42,5 +42,26 @@ const userController = new OpenAPIHono<Context>()
       })
       .from(users);
     return c.json(usersData, 200);
+  })
+  .openapi(getUserMe, async (c) => {
+    const db = drizzle(c.env.DB);
+
+    const userId = c.get("jwtPayload");
+    const id = userId.id;
+
+    const user = await db
+      .select({
+        id: users.id,
+        username: users.username,
+      })
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+
+    if (!user.length) {
+      return c.json({ message: "User not found" }, 400);
+    }
+
+    return c.json(user[0], 200);
   });
 export { userController };
