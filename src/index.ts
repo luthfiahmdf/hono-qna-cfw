@@ -17,7 +17,16 @@ const app = new Hono<{ Bindings: Env }>({
 })
   .use(logger())
   .use(prettyJSON())
-  .use("api/", cors())
+  .use(
+    cors({
+      origin: ["http://localhost:3000", "https://tanya-tanyain.vercel.app"],
+      allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowHeaders: ["Content-Type", "Authorization"],
+      exposeHeaders: ["Content-Length", "X-Requested-With"],
+      maxAge: 600,
+      credentials: true,
+    })
+  )
   .route("", routes)
   .get("/ui", Scalar({ url: "/api/doc", theme: "elysiajs" }))
   .get("/", (c) => c.json({ message: `Hello Hono!🔥 ` }));

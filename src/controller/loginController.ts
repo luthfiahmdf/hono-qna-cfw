@@ -42,7 +42,7 @@ const userLoginController = new OpenAPIHono<Context>().openapi(
     );
     return c.json(
       {
-        token: token,
+        access_token: token,
         message: "User logged in",
       },
       200

@@ -19,7 +19,7 @@ export const loginSchema = z.object({
   }),
 });
 export const loginResponseSchema = z.object({
-  token: z.string().openapi({
+  access_token: z.string().openapi({
     example: "123e4567-e89b-12d3-a456-426614174000",
   }),
   message: z.string().openapi({
