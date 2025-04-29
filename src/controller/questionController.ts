@@ -5,7 +5,6 @@ import { drizzle } from "drizzle-orm/d1";
 import { questions, users } from "../db/schema";
 import { desc, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
-import { requireAuth } from "../middleware/jwt";
 
 const questionController = new OpenAPIHono<Context>()
 

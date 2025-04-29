@@ -20,6 +20,12 @@ export const questionSchema = z.object({
   createAt: z.string().openapi({
     example: "2023-01-01T00:00:00.000Z",
   }),
+  isViewed: z
+    .boolean()
+    .openapi({
+      example: false,
+    })
+    .nullable(),
 });
 export const qeustionParamsSchema = z.object({
   slug: z.string().openapi({
