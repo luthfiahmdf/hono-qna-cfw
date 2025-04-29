@@ -17,6 +17,7 @@ const createQuestion = createRoute({
         userId: true,
         id: true,
         createAt: true,
+        isViewed: true
       }),
       "Create question"
     ),
