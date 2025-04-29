@@ -25,6 +25,7 @@ const questionController = new OpenAPIHono<Context>()
         userId: user[0].id,
         name: questionData.name,
         question: questionData.question,
+        isViewed: false
       })
       .returning();
 
