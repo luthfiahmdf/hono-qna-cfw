@@ -6,7 +6,7 @@ import {
   updateActiveQuestion,
 } from "../routes/activeQuestionRoute";
 import { drizzle } from "drizzle-orm/d1";
-import { activeQuestions, users } from "../db/schema";
+import { activeQuestions, users, questions } from "../db/schema";
 import * as schema from "../db/schema";
 import { eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
@@ -36,13 +36,16 @@ const activeQuestionController = new OpenAPIHono<Context>()
     const { slug } = c.req.param();
     const db = drizzle(c.env.DB);
     const questionData = c.req.valid("json");
+
     const [user] = await db
       .select()
       .from(users)
       .where(eq(users.username, slug));
+
     if (!user) {
       throw new HTTPException(404, { message: "User not found" });
     }
+
     const [activeQuestion] = await db
       .select()
       .from(activeQuestions)
@@ -57,16 +60,28 @@ const activeQuestionController = new OpenAPIHono<Context>()
         })
         .returning();
 
+      await db
+        .update(questions)
+        .set({ isViewed: true })
+        .where(eq(questions.id, questionData.questionId));
+
       return c.json(newActiveQuestion, 201);
     }
-    const [activeQuestionData] = await db
+
+    const [updatedActiveQuestion] = await db
       .update(activeQuestions)
       .set({
-        userId: user.id,
         questionId: questionData.questionId,
       })
+      .where(eq(activeQuestions.id, activeQuestion.id))
       .returning();
-    return c.json(activeQuestionData, 200);
+
+    await db
+      .update(questions)
+      .set({ isViewed: true })
+      .where(eq(questions.id, questionData.questionId));
+
+    return c.json(updatedActiveQuestion, 200);
   })
   .openapi(getActiveQuestion, async (c) => {
     const { slug } = c.req.param();
@@ -92,6 +107,7 @@ const activeQuestionController = new OpenAPIHono<Context>()
         questionId: activeQuestion.question.id,
         question: activeQuestion.question.question,
         createdAt: activeQuestion.question.createAt,
+        isViewed: activeQuestion.question.isViewed,
       },
       200
     );

@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v7 as uuidv7 } from "uuid";
 export const users = sqliteTable("users_table", {
   id: text("id")
@@ -20,6 +20,7 @@ export const questions = sqliteTable("questions_table", {
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
   question: text("question").notNull(),
+  isViewed: int({ mode: "boolean" }),
 });
 export const activeQuestions = sqliteTable("active_questions_table", {
   id: text("id")

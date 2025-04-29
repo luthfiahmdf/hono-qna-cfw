@@ -1,0 +1,1 @@
+ALTER TABLE `questions_table` ADD `isViewed` integer;
