@@ -14,10 +14,7 @@ export const activeQuestionSchema = z.object({
   }),
 });
 export const responseActiveQuestionSchema = z.object({
-  id: z.string().uuid().openapi({
-    example: "123e4567-e89b-12d3-a456-426614174000",
-  }),
-  name: z
+  sender: z
     .string()
     .min(3)
     .max(50)
@@ -26,19 +23,7 @@ export const responseActiveQuestionSchema = z.object({
     })
     .optional()
     .nullable(),
-  questionId: z.string().min(2).max(100).openapi({
+  question: z.string().min(3).max(160).openapi({
     example: "johndoe",
   }),
-  question: z.string().min(2).max(100).openapi({
-    example: "johndoe",
-  }),
-  createdAt: z.string().openapi({
-    example: "2023-01-01T00:00:00.000Z",
-  }),
-  isViewed: z
-    .boolean()
-    .openapi({
-      example: false,
-    })
-    .nullable(),
 });

@@ -28,10 +28,10 @@ export const activeQuestions = sqliteTable("active_questions_table", {
     .$defaultFn(() => uuidv7()),
   userId: text("user_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade" }),
   questionId: text("question_id")
     .notNull()
-    .references(() => questions.id),
+    .references(() => questions.id, { onDelete: "cascade" }),
   updateAt: text("update_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),

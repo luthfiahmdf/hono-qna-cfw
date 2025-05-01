@@ -23,9 +23,9 @@ const questionController = new OpenAPIHono<Context>()
       .insert(questions)
       .values({
         userId: user[0].id,
-        name: questionData.name,
+        name: questionData.name ? questionData.name : "Anomali",
         question: questionData.question,
-        isViewed: false
+        isViewed: false,
       })
       .returning();
 
