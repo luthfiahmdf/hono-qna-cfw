@@ -7,6 +7,7 @@ export type Context = {
   Bindings: {
     DB: D1Database;
     JWT_SECRET: string;
+    OVERLAY_ROOM: DurableObjectNamespace;
   };
   Variables: {
     db: DrizzleDB;

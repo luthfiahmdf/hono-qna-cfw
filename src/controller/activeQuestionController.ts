@@ -16,10 +16,7 @@ const activeQuestionController = new OpenAPIHono<Context>()
     const { slug } = c.req.param();
     const db = drizzle(c.env.DB);
     const questionData = c.req.valid("json");
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.username, slug));
+    const [user] = await db.select().from(users).where(eq(users.id, slug));
     if (!user) {
       throw new HTTPException(404, { message: "User not found" });
     }
@@ -37,10 +34,7 @@ const activeQuestionController = new OpenAPIHono<Context>()
     const db = drizzle(c.env.DB);
     const questionData = c.req.valid("json");
 
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.username, slug));
+    const [user] = await db.select().from(users).where(eq(users.id, slug));
 
     if (!user) {
       throw new HTTPException(404, { message: "User not found" });
@@ -51,6 +45,7 @@ const activeQuestionController = new OpenAPIHono<Context>()
       .from(activeQuestions)
       .where(eq(activeQuestions.userId, user.id));
 
+    let updated;
     if (!activeQuestion) {
       const [newActiveQuestion] = await db
         .insert(activeQuestions)
@@ -59,29 +54,55 @@ const activeQuestionController = new OpenAPIHono<Context>()
           questionId: questionData.questionId,
         })
         .returning();
-
-      await db
-        .update(questions)
-        .set({ isViewed: true })
-        .where(eq(questions.id, questionData.questionId));
-
-      return c.json(newActiveQuestion, 201);
+      updated = newActiveQuestion;
+    } else {
+      const [updatedActiveQuestion] = await db
+        .update(activeQuestions)
+        .set({
+          questionId: questionData.questionId,
+        })
+        .where(eq(activeQuestions.id, activeQuestion.id))
+        .returning();
+      updated = updatedActiveQuestion;
     }
-
-    const [updatedActiveQuestion] = await db
-      .update(activeQuestions)
-      .set({
-        questionId: questionData.questionId,
-      })
-      .where(eq(activeQuestions.id, activeQuestion.id))
-      .returning();
 
     await db
       .update(questions)
       .set({ isViewed: true })
       .where(eq(questions.id, questionData.questionId));
 
-    return c.json(updatedActiveQuestion, 200);
+    // Ambil isi pertanyaan
+    const [question] = await db
+      .select()
+      .from(questions)
+      .where(eq(questions.id, questionData.questionId));
+
+    if (question) {
+      const id = c.env.OVERLAY_ROOM.idFromName(slug);
+      const stub = c.env.OVERLAY_ROOM.get(id);
+
+      // console.log("Sending to Durable Object overlay:", {
+      //   slug,
+      //   overlayId: id.toString(),
+      //   questionText: question.question,
+      //   questionSender: question.name,
+      // });
+      const url = new URL(c.req.url);
+      const origin = url.origin;
+
+      const res = await stub.fetch(`${origin}/send/${slug}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: question.question,
+          sender: question.name,
+        }),
+      });
+
+      console.log("Overlay response status:", res.status);
+    }
+
+    return c.json(updated, activeQuestion ? 200 : 201);
   })
   .openapi(getActiveQuestion, async (c) => {
     const { slug } = c.req.param();
@@ -102,12 +123,8 @@ const activeQuestionController = new OpenAPIHono<Context>()
     }
     return c.json(
       {
-        id: activeQuestion.question.id,
-        name: activeQuestion.question.name,
-        questionId: activeQuestion.question.id,
+        sender: activeQuestion.question.name,
         question: activeQuestion.question.question,
-        createdAt: activeQuestion.question.createAt,
-        isViewed: activeQuestion.question.isViewed,
       },
       200
     );

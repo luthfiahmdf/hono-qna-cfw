@@ -7,11 +7,14 @@ import { RegExpRouter } from "hono/router/reg-exp-router";
 import { SmartRouter } from "hono/router/smart-router";
 import { TrieRouter } from "hono/router/trie-router";
 import routes from "./routes/route";
+import { OverlayRoom } from "./overlay-room";
 
 export type Env = {
   DB: D1Database;
   JWT_SECRET: string;
+  OVERLAY_ROOM: DurableObjectNamespace;
 };
+
 const app = new Hono<{ Bindings: Env }>({
   router: new SmartRouter({ routers: [new RegExpRouter(), new TrieRouter()] }),
 })
@@ -28,7 +31,14 @@ const app = new Hono<{ Bindings: Env }>({
     })
   )
   .route("", routes)
+  .get("/overlay/:slug", async (c) => {
+    const slug = c.req.param("slug");
+    const stub = c.env.OVERLAY_ROOM.get(c.env.OVERLAY_ROOM.idFromName(slug));
+    return stub.fetch(c.req.raw);
+  })
   .get("/ui", Scalar({ url: "/api/doc", theme: "elysiajs" }))
+
   .get("/", (c) => c.json({ message: `Hello Hono!🔥 ` }));
 
 export default app;
+export { OverlayRoom };

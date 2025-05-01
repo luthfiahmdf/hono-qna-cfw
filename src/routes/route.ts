@@ -3,6 +3,7 @@ import { userController } from "../controller/userController";
 import { userLoginController } from "../controller/loginController";
 import { questionController } from "../controller/questionController";
 import { activeQuestionController } from "../controller/activeQuestionController";
+import { OverlayRoom } from "../overlay-room"; // Pastikan untuk import OverlayRoom
 
 const routes = new OpenAPIHono()
   .basePath("/api")
@@ -17,6 +18,7 @@ const routes = new OpenAPIHono()
       title: "Hono Qna API",
     },
   });
+
 export type AppType = typeof routes;
 export default routes;
 export type App = typeof routes;
