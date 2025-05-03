@@ -3,7 +3,7 @@ import { userController } from "../controller/userController";
 import { userLoginController } from "../controller/loginController";
 import { questionController } from "../controller/questionController";
 import { activeQuestionController } from "../controller/activeQuestionController";
-import { OverlayRoom } from "../overlay-room"; // Pastikan untuk import OverlayRoom
+import { getDataDashboardController } from "../controller/dataDashboardController";
 
 const routes = new OpenAPIHono()
   .basePath("/api")
@@ -11,6 +11,7 @@ const routes = new OpenAPIHono()
   .route("/login", userLoginController)
   .route("/questions", questionController)
   .route("/activeQuestions", activeQuestionController)
+  .route("/dashboard", getDataDashboardController)
   .doc("/doc", {
     openapi: "3.0.3",
     info: {

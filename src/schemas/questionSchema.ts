@@ -27,7 +27,7 @@ export const questionSchema = z.object({
     })
     .nullable(),
 });
-export const qeustionParamsSchema = z.object({
+export const questionParamsSchema = z.object({
   slug: z.string().openapi({
     example: "johndoe",
   }),

@@ -40,12 +40,18 @@ const questionController = new OpenAPIHono<Context>()
       .from(users)
       .where(eq(users.username, slug));
 
+    if (!user) {
+      throw new HTTPException(404, { message: "User not found" });
+    }
     const questionsData = await db
       .select()
       .from(questions)
       .where(eq(questions.userId, user.id))
       .orderBy(desc(questions.createAt));
-    return c.json(questionsData, 200);
+    return c.json(
+      questionsData.length ? questionsData : [],
+      200
+    );
   });
 
 export { questionController };

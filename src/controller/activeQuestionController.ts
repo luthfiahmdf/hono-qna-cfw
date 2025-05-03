@@ -90,43 +90,57 @@ const activeQuestionController = new OpenAPIHono<Context>()
       const url = new URL(c.req.url);
       const origin = url.origin;
 
-      const res = await stub.fetch(`${origin}/send/${slug}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: question.question,
-          sender: question.name,
-        }),
-      });
+      const res = await stub.fetch(
+        new Request(`${origin}/send/${slug}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: question.question,
+            sender: question.name,
+          }),
+        })
+      );
 
       console.log("Overlay response status:", res.status);
     }
 
     return c.json(updated, activeQuestion ? 200 : 201);
   })
+
+
+
   .openapi(getActiveQuestion, async (c) => {
     const { slug } = c.req.param();
     const db = drizzle(c.env.DB, { schema });
     const [user] = await db.select().from(users).where(eq(users.id, slug));
+
     if (!user) {
       throw new HTTPException(404, { message: "User not found" });
     }
-    const [activeQuestion] = await db.query.activeQuestions.findMany({
+
+    const activeQuestionsData = await db.query.activeQuestions.findMany({
       where: eq(activeQuestions.userId, user.id),
-      with: {
-        question: true,
-      },
+      with: { question: true },
     });
 
-    if (!activeQuestion || !activeQuestion.question) {
-      throw new HTTPException(404, { message: "No active question found" });
-    }
+
+    const activeQuestion = activeQuestionsData[0]; // ambil pertama aja
+
     return c.json(
-      {
-        sender: activeQuestion.question.name,
-        question: activeQuestion.question.question,
-      },
+      activeQuestion
+        ? {
+          sender: activeQuestion.question.name,
+          question: activeQuestion.question.question,
+        }
+        : {
+          sender: null,
+          question: null,
+        },
       200
     );
+
   });
+
+
+
 export { activeQuestionController };

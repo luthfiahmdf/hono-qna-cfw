@@ -1,5 +1,5 @@
 import { jsonContent, jsonContentRequired } from "stoker/openapi/helpers";
-import { qeustionParamsSchema } from "../schemas/questionSchema";
+import { questionParamsSchema } from "../schemas/questionSchema";
 import {
   activeQuestionSchema,
   responseActiveQuestionSchema,
@@ -12,7 +12,7 @@ const createActiveQuestion = createRoute({
   method: "post",
   path: "/:slug",
   request: {
-    params: qeustionParamsSchema,
+    params: questionParamsSchema,
     body: jsonContentRequired(
       activeQuestionSchema.omit({
         id: true,
@@ -36,7 +36,7 @@ const updateActiveQuestion = createRoute({
   method: "put",
   path: "/:slug",
   request: {
-    params: qeustionParamsSchema,
+    params: questionParamsSchema,
     body: jsonContentRequired(
       activeQuestionSchema.omit({
         userId: true,
@@ -64,11 +64,10 @@ const getActiveQuestion = createRoute({
   method: "get",
   // middleware: [requireAuth],
   path: "/:slug",
-  request: { params: qeustionParamsSchema },
+  request: { params: questionParamsSchema },
   responses: {
     200: jsonContent(responseActiveQuestionSchema, "Question created"),
     400: jsonContent(errorSchema, "Bad request"),
-    404: jsonContent(errorSchema, "Not found"),
   },
 });
 export { createActiveQuestion, updateActiveQuestion, getActiveQuestion };
