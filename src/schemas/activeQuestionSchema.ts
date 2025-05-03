@@ -25,5 +25,5 @@ export const responseActiveQuestionSchema = z.object({
     .nullable(),
   question: z.string().min(3).max(160).openapi({
     example: "johndoe",
-  }),
+  }).nullable()
 });

@@ -1,7 +1,7 @@
 import { createRoute } from "@hono/zod-openapi";
-import { jsonContentRequired } from "stoker/openapi/helpers";
+import { jsonContent, jsonContentRequired } from "stoker/openapi/helpers";
 import {
-  qeustionParamsSchema,
+  questionParamsSchema,
   questionSchema,
 } from "../schemas/questionSchema";
 import { errorSchema } from "../schemas/errorSchema";
@@ -11,7 +11,7 @@ const createQuestion = createRoute({
   method: "post",
   path: "/:slug",
   request: {
-    params: qeustionParamsSchema,
+    params: questionParamsSchema,
     body: jsonContentRequired(
       questionSchema.omit({
         userId: true,
@@ -36,11 +36,10 @@ const getQuestion = createRoute({
   method: "get",
   path: "/:slug",
   request: {
-    params: qeustionParamsSchema,
+    params: questionParamsSchema,
   },
   responses: {
-    200: jsonContentRequired(questionSchema.array(), "get All question"),
-    404: jsonContentRequired(errorSchema, "Bad request"),
+    200: jsonContent(questionSchema.array(), "get All question"),
   },
 });
 export { createQuestion, getQuestion };
