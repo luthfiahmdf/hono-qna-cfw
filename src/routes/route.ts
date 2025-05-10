@@ -4,7 +4,7 @@ import { userLoginController } from "../controller/loginController";
 import { questionController } from "../controller/questionController";
 import { activeQuestionController } from "../controller/activeQuestionController";
 import { getDataDashboardController } from "../controller/dataDashboardController";
-
+import { overlaySettingController } from "../controller/overlayController"
 const routes = new OpenAPIHono()
   .basePath("/api")
   .route("/users", userController)
@@ -12,6 +12,7 @@ const routes = new OpenAPIHono()
   .route("/questions", questionController)
   .route("/activeQuestions", activeQuestionController)
   .route("/dashboard", getDataDashboardController)
+  .route("/settings", overlaySettingController)
   .doc("/doc", {
     openapi: "3.0.3",
     info: {
