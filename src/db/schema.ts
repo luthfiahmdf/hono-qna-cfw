@@ -22,6 +22,16 @@ export const questions = sqliteTable("questions_table", {
   question: text("question").notNull(),
   isViewed: int({ mode: "boolean" }),
 });
+export const overlaySettings = sqliteTable("overlay_settings", {
+  id: text("id").primaryKey().$defaultFn(() => uuidv7()),
+  userId: text("user_id").notNull().references(() => users.id),
+  border: int({ mode: "boolean" }),
+  textColor: text("text_color"),
+  bgColor: text("bg_color"),
+  fontFamily: text("font_family")
+
+
+})
 export const activeQuestions = sqliteTable("active_questions_table", {
   id: text("id")
     .primaryKey()
@@ -61,3 +71,10 @@ export const activeQuestionRelations = relations(
     }),
   })
 );
+export const overlaySettingsRelations = relations(overlaySettings, ({ one }) => ({
+  users: one(users, {
+    fields: [overlaySettings.userId],
+    references: [users.id]
+  })
+})
+)
