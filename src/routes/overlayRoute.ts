@@ -24,7 +24,6 @@ const updateOverlaySettings = createRoute({
 const getOverlaySettings = createRoute({
   method: "get",
   path: "/:id",
-  middleware: [requireAuth],
   request: {
     params: overlayParamsSchema
   },
