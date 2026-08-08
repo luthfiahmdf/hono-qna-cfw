@@ -5,7 +5,10 @@ type Question = { question: string; sender: string };
 export class OverlayRoom {
   private socketsPerSlug: Record<string, WebSocket[]> = {};
 
-  constructor(private state: DurableObjectState, private env: Env) {}
+  constructor(
+    private state: DurableObjectState,
+    private env: Env,
+  ) {}
 
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
@@ -39,15 +42,53 @@ export class OverlayRoom {
 
       this.socketsPerSlug[slug].push(server);
 
+      // Handle WebSocket messages for real-time events
+      server.addEventListener("message", (event) => {
+        try {
+          const message = JSON.parse(event.data as string);
+
+          switch (message.type) {
+            case "join_room":
+              console.log(`User joined room: ${slug}`);
+              // Send confirmation back to client
+              server.send(
+                JSON.stringify({
+                  type: "room_joined",
+                  data: { userId: slug, timestamp: new Date().toISOString() },
+                }),
+              );
+              break;
+
+            case "leave_room":
+              console.log(`User left room: ${slug}`);
+              break;
+          }
+        } catch (error) {
+          console.error("Error handling WebSocket message:", error);
+        }
+      });
+
       // Cleanup on socket close
       server.addEventListener("close", () => {
         this.socketsPerSlug[slug] = this.socketsPerSlug[slug].filter(
-          (s: WebSocket) => s !== server
+          (s: WebSocket) => s !== server,
         );
-        // console.log(`WebSocket closed for slug: ${slug}`);
+        console.log(`WebSocket closed for slug: ${slug}`);
       });
 
       return new Response(null, { status: 101, webSocket: client });
+    }
+
+    // Handle broadcast requests from WebSocketService
+    if (request.method === "POST" && pathname.startsWith("/broadcast/")) {
+      try {
+        const broadcastData = await request.json();
+        this.broadcastToRoom(slug, broadcastData);
+        return new Response("Broadcast sent", { status: 200 });
+      } catch (error) {
+        console.error("Error in broadcast:", error);
+        return new Response("Failed to broadcast", { status: 500 });
+      }
     }
 
     if (request.method === "POST" && pathname === `/send/${slug}`) {
@@ -62,7 +103,7 @@ export class OverlayRoom {
 
         const sockets = this.socketsPerSlug[slug] || [];
         const openSockets = sockets.filter(
-          (s: WebSocket) => s.readyState === WebSocket.OPEN
+          (s: WebSocket) => s.readyState === WebSocket.OPEN,
         );
         this.socketsPerSlug[slug] = openSockets;
 
@@ -87,7 +128,7 @@ export class OverlayRoom {
       console.log("Slug extracted:", slug);
 
       const stored = await this.state.storage.get<Question>(
-        `activeQuestion-${slug}`
+        `activeQuestion-${slug}`,
       );
       if (!stored) {
         return new Response("No active question found", { status: 404 });
@@ -99,5 +140,33 @@ export class OverlayRoom {
     }
 
     return new Response("Not found", { status: 404 });
+  }
+
+  /**
+   * Broadcast message to all connected clients in a specific room
+   */
+  private broadcastToRoom(
+    slug: string,
+    message: any,
+    excludeSocket?: WebSocket,
+  ) {
+    const sockets = this.socketsPerSlug[slug] || [];
+    const openSockets = sockets.filter(
+      (s: WebSocket) => s.readyState === WebSocket.OPEN,
+    );
+
+    // Update the sockets list to only include open connections
+    this.socketsPerSlug[slug] = openSockets;
+
+    // Broadcast to all open sockets except the excluded one
+    for (const socket of openSockets) {
+      if (socket !== excludeSocket) {
+        try {
+          socket.send(JSON.stringify(message));
+        } catch (error) {
+          console.error("Error broadcasting message to WebSocket:", error);
+        }
+      }
+    }
   }
 }
